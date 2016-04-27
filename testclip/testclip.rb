@@ -1,62 +1,17 @@
 #!/usr/bin/ruby
 
 # testclip, by Danny R. Faught and inspired by James Bach's perlclip code
-# Copyright 2015 and licensed under GPLv3
+# Copyright 2016 and licensed under GPLv3
 
-# This script generates "counterstrings" - self-documenting test data like "*3*5*7*10*" and "2*4*6*8*11*" that help you test
-# various string lengths. If you report the status of the tests run with the counterstrings, the script will help you use
-# bisection to find exactly what point when increasing the string length that a failure or other behavior change occurs.
+# This script generates "counterstrings" - self-documenting test data like 
+# "*3*5*7*10*" and "2*4*6*8*11*" that help you test various string lengths. 
+# If you report the status of the tests run with the counterstrings, the 
+# script will help you use bisection to find exactly what point when 
+# increasing the string length that a failure or other behavior change occurs.
 
 # This script is designed for MacOS (small changes to pbcopy can make it portable elsewhere)
 
-#
-# This class generates a counterstring
-#
-class CounterString
-	attr_reader :length
-
-	def initialize(length, pip)
-		@length = length
-		@pip = pip
-	end
-
-	# This is the same algorithm used in perlclip. Despite the frequent reverse operations, this has good performance
-	# because it builds the reversed string by appending to it.
-	def text
-		pos = @length
-		target = pos
-		text = ""
-		while true
-			if text.length + pos.to_s.length + 1 > target
-				# last pip, if needed
-				text << @pip * (target - text.length)
-				break
-			end
-			# add the pip and counter (when reversed, the pip will follow the counter)
-			text << @pip << pos.to_s.reverse
-			pos -= pos.to_s.length + 1
-			redo
-		end
-		return text.reverse
-	end
-
-	# This algorithm is easier to understand than the text method, but the prepend is much slower on very large strings.
-	def textAltAlgorithm
-		string = ""
-		marker = @length
-		while (string.length < @length)
-			remaining = @length - string.length
-			toAdd = remaining.to_s + @pip
-			# Add a counter and pip until there's no more room
-			if (remaining >= toAdd.length)
-				string.prepend(toAdd)
-			else
-				string.prepend(@pip)
-			end
-		end
-		return string
-	end
-end
+require_relative "counterString.rb"
 
 #
 # This class processes each line of input and retains state between commands.
@@ -86,7 +41,7 @@ class CommandProcessor
 		puts 'quit: Quit.'
 	end
 
-	# Generate a counterstring of given lenth
+	# Generate a counterstring of given length
 	def cs(*inputArray)
 		length = inputArray[1]
 		if inputArray[2].nil?
