@@ -20,7 +20,7 @@ class CommandProcessor
 		IO.popen('pbcopy', 'w') { |f| f << str }
 	end
 
-	def help(*inputArray)
+	def help(arguments)
 		puts 'cs <n>:  Generate a counterstring of length <n>.'
 		puts 'pass: Indicate that a test with the last counterstring passed. Used for bisection.'
 		puts 'fail <s>: Indicate that a test with the last counterstring failed - optional <s> string distinguishes different failures. Used for bisection.'
@@ -31,17 +31,11 @@ class CommandProcessor
 	end
 
 	# Generate a counterstring of given length
-	def cs(*inputArray)
-		length = inputArray[1]
-		if inputArray[2].nil?
-			pip = "*"
-		else
-			pip = inputArray[2]
-		end
+	def cs(length, pip)
 		if length.nil?
 			raise "error - no length given for the counterstring"
 		else
-			cs = CounterString.new(length.to_i, pip)
+			cs = CounterString.new(length, pip)
 			@lastGenerator = cs
 			text = cs.text
 			pbcopy(text)
@@ -91,12 +85,8 @@ class CommandProcessor
 	end
 
 	# For a given boundary where behavior changes, do a bisection between them to zero in on where the transition occurs.
-	def bisect(*inputArray)
-		if inputArray[1].nil?
-			boundary = 1
-		else
-			boundary = inputArray[1].to_i
-		end
+	def bisect(arguments)
+		boundary = arguments[0].nil? ? 1 : arguments[0].to_i
 		if boundary < 1
 			puts "boundary number must be 1 or greater"
 		else
@@ -126,13 +116,13 @@ class CommandProcessor
 	end
 
 	# Clear previously reported results
-	def reset(*inputArray)
+	def reset(arguments)
 		@results.clear
 		puts "pass/fail status is now cleared"
 	end
 
 	# Show all test results and the boundaries between group of different results ("pass", "fail", and each "fail <s>")
-	def status(*inputArray)
+	def status(arguments)
 		if @results.empty?
 			puts "no status yet"
 		else
@@ -151,21 +141,23 @@ class CommandProcessor
 
 	# Command dispatcher
 	def processCommand(*inputArray)
-		case inputArray[0]
+		command = inputArray[0]
+		arguments = inputArray[1, inputArray.length - 1]
+		case command
 		when /^help/i
-			help(*inputArray)
+			help(arguments)
 		when /^quit/i
 			return 1  # signal the caller to quit
 		when /^cs/i
-			cs(*inputArray)
+			cs(arguments[0].to_i, arguments[1] || "*")
 		when /^pass/i, /^fail/i
 			passFail(*inputArray)
 		when /^bisect/i
-			bisect(*inputArray)
+			bisect(arguments)
 		when /^reset/i
-			reset(*inputArray)
+			reset(arguments)
 		when /^status/i
-			status(*inputArray)
+			status(arguments)
 		else
 			puts "Command not recognized."
 		end
