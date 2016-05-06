@@ -43,12 +43,23 @@ class CommandProcessor
 		end
 	end
 		
+	def pass()
+		return passFail("pass")
+	end
+
+	def fail(comment = nil)
+		return passFail("fail", comment)
+	end
+
 	# Optionally record test results. Overwrite a previous report for the same value if necessary.
-	def passFail(*inputArray)
+	def passFail(result, comment = nil)
 		if (@lastGenerator == nil)
-			puts "No counterstring to mark."
+			raise "No counterstring to mark."
 		else
-			wholeLine = inputArray.join(" ")
+			wholeLine = result
+			if (comment != nil && comment.length > 0)
+				wholeLine += " " + comment
+			end
 			if @results.has_key?(@lastGenerator.length)
 				puts @lastGenerator.length.to_s << " result changed from " << @results[@lastGenerator.length] << " to " << wholeLine
 			else
@@ -58,11 +69,18 @@ class CommandProcessor
 		end
 	end
 
+	def getResults
+		return @results
+	end
+
 	# Helper. Find a boundary between groups of identical test results. Different boundaries are numbered starting with "1".
 	def findBoundary(boundary)
 		lower = nil
 		upper = nil
 		foundBoundary = 0
+		if boundary < 1
+			raise "boundary number must be 1 or greater"
+		end
 		@results.keys.sort.each do |key|
 			if lower == nil
 				lower = key
@@ -85,32 +103,28 @@ class CommandProcessor
 	end
 
 	# For a given boundary where behavior changes, do a bisection between them to zero in on where the transition occurs.
-	def bisect(arguments)
-		boundary = arguments[0].nil? ? 1 : arguments[0].to_i
-		if boundary < 1
-			puts "boundary number must be 1 or greater"
+	def bisect(boundary)
+		if @results.length < 2
+			raise "can't bisect - need two different test results"
+		end
+		lower, upper, foundBoundary = findBoundary(boundary)
+		if boundary > foundBoundary
+			puts "Boundary '" << boundary.to_s << "' too high - there are only " << foundBoundary.to_s << " boundaries (see 'status')"
 		else
-			lower, upper, foundBoundary = findBoundary(boundary)
-			if foundBoundary < 1
-				puts "can't bisect - need two different test results"
-			elsif boundary > foundBoundary
-				puts "Boundary '" << boundary.to_s << "' too high - there are only " << foundBoundary.to_s << " boundaries (see 'status')"
+			bisect = lower + ((upper - lower) / 2).to_i
+			highLow = "highest value for '" << @results[lower] << "': " << lower.to_s << "\n" <<
+				"lowest value for '" << @results [upper] << "': " << upper.to_s
+			if @results.has_key?(bisect)
+				puts "Boundary found!"
+				puts highLow
 			else
-				bisect = lower + ((upper - lower) / 2).to_i
-				highLow = "highest value for '" << @results[lower] << "': " << lower.to_s << "\n" <<
-					"lowest value for '" << @results [upper] << "': " << upper.to_s
-				if @results.has_key?(bisect)
-					puts "Boundary found!"
-					puts highLow
-				else
-					cs = CounterString.new(bisect, "*")
-					@lastGenerator = cs
-					text = cs.text
-					pbcopy(text)
-					puts "bisecting on boundary " << boundary.to_s
-					puts highLow
-					puts text.length.to_s <<  " characters loaded on the clipboard"
-				end
+				cs = CounterString.new(bisect, "*")
+				@lastGenerator = cs
+				text = cs.text
+				pbcopy(text)
+				puts "bisecting on boundary " << boundary.to_s
+				puts highLow
+				puts text.length.to_s <<  " characters loaded on the clipboard"
 			end
 		end
 	end
@@ -150,10 +164,12 @@ class CommandProcessor
 			return 1  # signal the caller to quit
 		when /^cs/i
 			cs(arguments[0].to_i, arguments[1] || "*")
-		when /^pass/i, /^fail/i
-			passFail(*inputArray)
+		when /^pass/i, 
+			pass()
+		when /^fail/i
+			fail(arguments[0])
 		when /^bisect/i
-			bisect(arguments)
+			bisect(arguments[0].to_i)
 		when /^reset/i
 			reset(arguments)
 		when /^status/i
