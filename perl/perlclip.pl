@@ -2,6 +2,9 @@
 
 use strict;
 use warnings;
+use FindBin;
+use lib $FindBin::Bin;
+use counterString;
 
 my $clip;
 if ($^O eq "MSWin32" or $^O eq "cygwin") {
@@ -140,21 +143,7 @@ TOP:
 sub make_cs
 {
 	my ($pos, $pip) = @_;
-
-	my $target = $pos;
-	my $text = "";
-	
-	{
-		if (length($text)+length($pos)+1 > $target)
-		{
-			$text .= $pip x ($target - length($text));
-			last;
-		}
-		$text .= $pip.reverse($pos);
-		$pos -= length($pos)+1;
-		redo;
-	}
-	$text = scalar(reverse($text));
+	my $text = CounterString->new($pip)->text($pos);
 	&clipSet($text);
 	print "*** Ready to Paste!\n";
 	return 1;
