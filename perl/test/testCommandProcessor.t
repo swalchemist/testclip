@@ -18,4 +18,8 @@ sub test_help_with_foreword : Tests {
 	like($cp->helpText("FOREWORD HERE\n"), qr/FOREWORD HERE/);
 }
 
+#sub test_clipSet : Tests {
+#	
+#}
+
 Test::Class->runtests;
