@@ -13,7 +13,7 @@ class TestCommandProcessor < Test::Unit::TestCase
 
     def test_cs_no_length
 		dont_allow(@c).pbcopy
-		assert_raise() { @c.cs(nil, "*") }
+		assert_raise(RuntimeError) { @c.cs(nil, "*") }
     end
 
     def test_cs_one
@@ -27,7 +27,7 @@ class TestCommandProcessor < Test::Unit::TestCase
     end
 
     def test_pass_no_cs
-		assert_raise { @c.pass() }
+		assert_raise(RuntimeError) { @c.pass() }
     end
 
     def test_pass
@@ -37,7 +37,7 @@ class TestCommandProcessor < Test::Unit::TestCase
     end
 
     def test_fail_no_cs 
-		assert_raise { @c.fail() }
+		assert_raise(RuntimeError) { @c.fail() }
     end
 
     def test_fail

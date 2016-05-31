@@ -11,7 +11,7 @@ class TestEquivalanceClassifier < Test::Unit::TestCase
 	end
 
 	def test_findBoundary_bad_boundary
-		assert_raise { @e.findBoundary(0) }
+		assert_raise(RuntimeError) { @e.findBoundary(0) }
 	end
 
 	def test_findBoundary_nil
@@ -44,7 +44,7 @@ class TestEquivalanceClassifier < Test::Unit::TestCase
 	end
 
 	def test_bisect_no_result
-		assert_raise { @e.bisect(1) }
+		assert_raise(RuntimeError) { @e.bisect(1) }
 	end
 
 	def test_bisect_one_result
