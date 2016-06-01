@@ -5,6 +5,7 @@ use warnings;
 use FindBin;
 use lib $FindBin::Bin;
 use counterString;
+use equivalenceClassifier;
 
 package TestClip::CommandProcessor;
 
@@ -21,10 +22,9 @@ if ($^O eq "MSWin32" or $^O eq "cygwin") {
 sub new 
 {
 	my ($class) = @_;
-	my $self = {
-		bisectedbefore => 0,
-		upper => 0,
-		lower => 0
+	my $classifier = TestClip::EquivalenceClassifier->new;
+	my $self = { 
+		classifier => $classifier
 	};
 	return bless $self, $class;
 }
@@ -59,7 +59,7 @@ TOP:
 		elsif ($pattern =~ /counterstring\s+?(\d+)/i)
 		{
 			my $pos = $1;
-			if ($self->{bisectedbefore}) {@cs = (); $self->{bisectedbefore} = 0 }
+			if ($self->{classifier}->{bisectedbefore}) {@cs = (); $self->{classifier}->reset }
 			push @cs, $1;
 			$pip = "*";
 			if ($pattern =~ /counterstring\s+\d+?\s+(.)/) {$pip = $1}
@@ -81,7 +81,7 @@ TOP:
 		elsif ($pattern =~ /^u$/i)
 		{
 			(print "Before using 'U' you must give two counterstring commands.\n" and redo TOP) if (!$self->goodbi(\@cs));
-			if ($self->{bisectedbefore})
+			if ($self->{classifier}->{bisectedbefore})
 			{
 				$self->{lower} += int(($self->{upper}-$self->{lower})/2);
 				(print "The lower bound equals the upper bound... No bisection necessary.\n" and redo TOP) if ($self->{upper} == $self->{lower});
@@ -91,7 +91,7 @@ TOP:
 			}
 			else
 			{
-				$self->{bisectedbefore}++; 
+				$self->{classifier}->{bisectedbefore}++; 
 				($self->{lower}, $self->{upper}) = sort {$a <=> $b} @cs[-1, -2];
 				(print "The lower bound equals the upper bound... No bisection necessary.\n" and redo TOP) if ($self->{upper} == $self->{lower});
 				print "Creating counterstring of length ",$self->{upper}-int(($self->{upper}-$self->{lower})/2),".\n";
@@ -102,7 +102,7 @@ TOP:
 		elsif ($pattern =~ /^d$/i)
 		{
 			(print "Before using 'D' you must give two counterstring commands.\n" and redo TOP) if (!$self->goodbi(\@cs));
-			if ($self->{bisectedbefore})
+			if ($self->{classifier}->{bisectedbefore})
 			{
 				$self->{upper} -= int(($self->{upper}-$self->{lower})/2);
 				(print "The lower bound equals the upper bound... No bisection necessary.\n" and redo TOP) if ($self->{upper} == $self->{lower});
@@ -112,7 +112,7 @@ TOP:
 			}
 			else
 			{
-				$self->{bisectedbefore}++; 
+				$self->{classifier}->{bisectedbefore}++; 
 				($self->{lower}, $self->{upper}) = sort {$a <=> $b} @cs[-1, -2];
 				(print "The lower bound equals the upper bound... No bisection necessary.\n" and redo TOP) if ($self->{upper} == $self->{lower});
 				print "Creating counterstring of length ",$self->{lower}+int(($self->{upper}-$self->{lower})/2),".\n";

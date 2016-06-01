@@ -75,6 +75,9 @@ class EquivalenceClassifier
 
 	# For a given boundary where behavior changes, do a bisection between them to zero in on where the transition occurs.
 	def bisect(boundary)
+		#if (! defined? boundary)
+		#	boundary = 1
+		#end
 		if @results.length < 2
 			raise "can't bisect - need two different test results"
 		end
@@ -96,9 +99,8 @@ class EquivalenceClassifier
 	end
 
 	# Clear previously reported results
-	def reset(arguments)
+	def reset
 		@results.clear
-		puts "pass/fail status is now cleared"
 	end
 
 	# Show all test results and the boundaries between group of different results ("pass", "fail", and each "fail <s>")
