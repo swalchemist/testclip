@@ -83,7 +83,6 @@ class CommandProcessor
 		# Counterstring or integer
 		forClipboard = @currentClassifier == @csClassifier ? CounterString.new(newValue, "*").text : newValue
 		pbcopy(forClipboard)
-		puts "bisecting on boundary " << boundary.to_s
 		puts forClipboard.length.to_s <<  " characters loaded on the clipboard"  # TODO: different message for integer
 	end
 
