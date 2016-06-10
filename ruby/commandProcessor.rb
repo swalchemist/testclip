@@ -2,7 +2,7 @@
 
 require_relative "counterString.rb"
 require_relative "equivalanceClassifier.rb"
-require "Clipboard"
+require "clipboard"
 
 module Usercode
 	def allchars

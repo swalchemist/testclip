@@ -11,7 +11,7 @@
 
 # This script is designed for MacOS (small changes to pbcopy can make it portable elsewhere)
 
-require_relative "CommandProcessor.rb" 
+require_relative "commandProcessor" 
 
 #
 # Main loop
