@@ -87,12 +87,12 @@ class EquivalenceClassifier
 		else
 			bisect = lower + ((upper - lower) / 2).to_i
 			highLow = "highest value for '" + @results[lower] + "': " + lower.to_s + "\n" +
-				"lowest value for '" + @results [upper] + "': " + upper.to_s
+				"lowest value for '" + @results[upper] + "': " + upper.to_s
+			puts highLow
 			if @results.has_key?(bisect)
 				puts "Boundary found!"
-				puts highLow
+				return nil
 			else
-				puts highLow
 				return bisect
 			end
 		end

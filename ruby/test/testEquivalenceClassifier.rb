@@ -58,10 +58,16 @@ class TestEquivalanceClassifier < Test::Unit::TestCase
 		assert_raise(RuntimeError) { @e.bisect(2) }
 	end
 
-	def test_bisect_found
+	def test_bisect_good
 		@e.pass(1)
 		@e.fail(3)
 		assert_equal(2, @e.bisect(1))
+	end
+
+	def test_bisect_boundary_found
+		@e.pass(1)
+		@e.fail(2)
+		assert_equal(nil, @e.bisect(1))
 	end
 
 end

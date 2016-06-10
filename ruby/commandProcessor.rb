@@ -2,11 +2,27 @@
 
 require_relative "counterString.rb"
 require_relative "equivalanceClassifier.rb"
+require "Clipboard"
+
+module Usercode
+	def allchars
+		allchars = ""
+		for t in 1..255
+			allchars += t.chr
+		end
+		return allchars
+	end
+
+	def isolatedEval(arguments)
+		return eval arguments.join(" ")
+	end
+end
 
 #
 # This class processes each line of input and retains state between commands.
 #
 class CommandProcessor
+	include Usercode
 
 	def initialize
 		# Store pass/fail results - key = string size, value = result
@@ -20,11 +36,13 @@ class CommandProcessor
 
 	# Copy data to the clipboard (Mac OS)
 	def pbcopy(input)
-		str = input.to_s
-		IO.popen('pbcopy', 'w') { |f| f << str }
+		#str = input.to_s
+		#IO.popen('pbcopy', 'w') { |f| f << str }
+		Clipboard.copy(input.to_s)
 	end
 
 	def help(arguments)
+		puts 'code: Execute arbitrary ruby code and put what it returns on the clipboard. The "allchars" variable has ASCII values 1-255.'
 		puts 'cs <n>:  Generate a counterstring of length <n>.'
 		puts 'pass: Indicate that a test with the last counterstring passed. Used for bisection.'
 		puts 'fail <s>: Indicate that a test with the last counterstring failed - optional <s> string distinguishes different failures. Used for bisection.'
@@ -38,6 +56,12 @@ class CommandProcessor
 		validateCurrentClassifier
 		return @currentClassifier.getResults
 	end
+
+	def codeEval(arguments)
+		result = isolatedEval(arguments)
+		pbcopy result
+		puts "code output " << result.length.to_s << " characters long loaded on the clipboard"
+	end 
 
 	# Generate a counterstring of given length
 	def cs(length, pip)
@@ -78,10 +102,18 @@ class CommandProcessor
 	# For a given boundary where behavior changes, do a bisection between them to zero in on where the transition occurs.
 	def bisect(boundary)
 		newValue = @currentClassifier.bisect(boundary)
+		if newValue == nil
+			return  # boundary was already found
+		end
 		@lastValue = newValue
+		forClipboard = nil
 
 		# Counterstring or integer
-		forClipboard = @currentClassifier == @csClassifier ? CounterString.new(newValue, "*").text : newValue
+		if @currentClassifier == @csClassifier
+			forClipboard = CounterString.new(newValue, "*").text
+		else 
+			forClipboard = newValue
+		end
 		pbcopy(forClipboard)
 		puts forClipboard.length.to_s <<  " characters loaded on the clipboard"  # TODO: different message for integer
 	end
@@ -112,6 +144,8 @@ class CommandProcessor
 				cs(arguments[0].to_i, arguments[1] || "*")
 			when /^int/i
 				makeInt(arguments[0].to_i)
+			when /^code/i
+				codeEval(arguments)
 			when /^pass/i 
 				pass()
 			when /^fail/i

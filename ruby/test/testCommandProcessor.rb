@@ -51,4 +51,29 @@ class TestCommandProcessor < Test::Unit::TestCase
 		@c.fail("condition 1") 
 		assert_equal(@c.getResults, { 1 => "fail condition 1" })
     end
+
+	def test_codeEval_string
+		mock(@c).pbcopy("stringvalue")
+		@c.codeEval(['"stringvalue"'])
+	end
+
+	def test_codeEval_combined_args
+		mock(@c).pbcopy("aaa")
+		@c.codeEval(['"a" * 3'])
+	end
+
+	def test_codeEval_separate_args
+		mock(@c).pbcopy("aaaa")
+		@c.codeEval(['"a"', '*', '4'])
+	end
+
+	def test_codeEval_syntax_error
+		assert_raise(SyntaxError) { @c.codeEval(['"']) }
+	end
+
+	def test_allchars
+		mock(@c).pbcopy(satisfy {|arg| arg.length == 255})
+		@c.codeEval(['allchars'])
+	end
+
 end
