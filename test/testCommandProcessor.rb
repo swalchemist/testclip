@@ -76,7 +76,7 @@ class TestCommandProcessor < Test::Unit::TestCase
 	end
 
 	def test_allchars
-		mock(@c).pbcopy(satisfy {|arg| arg.length == 255})
+		mock(@c).pbcopy(satisfy {|arg| arg.length >= 250 })
 		@c.codeEval(['allchars'])
 	end
 
