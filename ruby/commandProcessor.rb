@@ -8,6 +8,10 @@ module Usercode
 	def allchars
 		allchars = ""
 		for t in 1..255
+			# Leave out characters that aren't in the Windows-1252 encoding
+			if ([129, 141, 143, 144, 157].include?(t))
+				next
+			end
 			allchars += t.chr
 		end
 		return allchars
