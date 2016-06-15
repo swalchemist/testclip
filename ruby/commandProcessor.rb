@@ -3,11 +3,21 @@
 require_relative "counterString.rb"
 require_relative "equivalanceClassifier.rb"
 require "clipboard"
+require "rbconfig"
 
 module Usercode
 	def allchars
 		allchars = ""
 		for t in 1..255
+			if RbConfig::CONFIG['host_os'].match('/mswin|msys|mingw|cygwin|bccwin|wince|emc/')
+				# On Windows, leave out characters that aren't in the Windows-1252 encoding
+				# C1 control codes: 129 - HOP, 141 - RI, 143 - SS3, 144 - DCS (terminated by ST), 157 - OSC
+				# C1 -> Unicode:
+				#  129 - ?, 141 - 008D, 143 - 008F, 144 - 0090, 157 - 009D
+				if ([129, 141, 143, 144, 157].include?(t))
+					next
+				end
+			end
 			allchars += t.chr
 		end
 		return allchars
