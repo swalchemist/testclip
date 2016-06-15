@@ -40,6 +40,10 @@ class TestCommandProcessor < Test::Unit::TestCase
 		assert_raise(RuntimeError) { @c.fail() }
     end
 
+	def test_bisect_no_cs
+		assert_raise(RuntimeError) { @c.bisect(1) }
+	end
+
     def test_fail
 		@c.cs(1, "*")
 		@c.fail() 
@@ -68,7 +72,7 @@ class TestCommandProcessor < Test::Unit::TestCase
 	end
 
 	def test_codeEval_syntax_error
-		assert_raise(SyntaxError) { @c.codeEval(['"']) }
+		assert_raise(RuntimeError) { @c.codeEval(['"']) }
 	end
 
 	def test_allchars

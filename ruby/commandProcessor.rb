@@ -25,6 +25,10 @@ module Usercode
 
 	def isolatedEval(arguments)
 		return eval arguments.join(" ")
+	rescue Exception => e
+		msg = e.message
+		msg.gsub(/ for #<CommandProcessor:[^>]*>/, '')   # clean up clutter
+		raise "Error in your code: " + msg
 	end
 end
 
@@ -46,20 +50,19 @@ class CommandProcessor
 
 	# Copy data to the clipboard (Mac OS)
 	def pbcopy(input)
-		#str = input.to_s
-		#IO.popen('pbcopy', 'w') { |f| f << str }
 		Clipboard.copy(input.to_s)
 	end
 
 	def help(arguments)
-		puts 'code: Execute arbitrary ruby code and put what it returns on the clipboard. The "allchars" variable has ASCII values 1-255.'
-		puts 'cs <n>:  Generate a counterstring of length <n>.'
+		puts 'cs <n>:  Generate a counterstring of length <n>. (Alias: "counterstring".)'
 		puts 'pass: Indicate that a test with the last counterstring passed. Used for bisection.'
 		puts 'fail <s>: Indicate that a test with the last counterstring failed - optional <s> string distinguishes different failures. Used for bisection.'
 		puts 'bisect <n>: Bisect on the given boundary between two different results (see "status"). <n> is "1" by default.'
 		puts 'status: Show pass/fail history in equivalance classes.'
 		puts 'reset: Remove all pass/fail information and start fresh.'
 		puts 'quit: Quit.'
+		puts 'help: Show this help.'
+		puts 'Anything else: Execute as ruby code and put what it returns on the clipboard. The "allchars" function has ASCII values 1-255 (with a few missing if you\'re on Windows).'
 	end
 
 	def getResults
@@ -68,7 +71,7 @@ class CommandProcessor
 	end
 
 	def codeEval(arguments)
-		result = isolatedEval(arguments)
+		result = isolatedEval(arguments).to_s
 		pbcopy result
 		puts "code output " << result.length.to_s << " characters long loaded on the clipboard"
 	end 
@@ -111,6 +114,9 @@ class CommandProcessor
 
 	# For a given boundary where behavior changes, do a bisection between them to zero in on where the transition occurs.
 	def bisect(boundary)
+		if (@currentClassifier == nil)
+			raise "No test results to bisect with"
+		end
 		newValue = @currentClassifier.bisect(boundary)
 		if newValue == nil
 			return  # boundary was already found
@@ -150,24 +156,22 @@ class CommandProcessor
 				help(arguments)
 			when /^quit/i
 				return 1  # signal the caller to quit
-			when /^cs/i
+			when /^cs/i, /^counterstring/i
 				cs(arguments[0].to_i, arguments[1] || "*")
 			when /^int/i
 				makeInt(arguments[0].to_i)
-			when /^code/i
-				codeEval(arguments)
 			when /^pass/i 
 				pass()
 			when /^fail/i
 				fail(arguments[0])
 			when /^bisect/i
-				bisect(arguments[0].to_i)
+				bisect(arguments.length >= 1 ? arguments[0].to_i : 1)
 			when /^reset/i
 				reset(arguments)
 			when /^status/i
 				status()
 			else
-				raise "Command not recognized."
+				codeEval(inputArray)
 		end
 		return 0
 	end
