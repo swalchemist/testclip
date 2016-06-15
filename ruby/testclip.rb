@@ -23,8 +23,8 @@ while true
 	inputArray = STDIN.gets.chomp.split
 	begin 
 		break if processor.processCommand(*inputArray) == 1
-	rescue
-		puts "ERROR: ", $!
+	rescue => e
+		puts e.message
 	end
 end
 
