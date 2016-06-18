@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative '../CounterString.rb'
+require_relative '../counterString.rb'
 require 'test/unit'
 
 class TestCounterString < Test::Unit::TestCase

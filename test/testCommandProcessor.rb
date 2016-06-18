@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative '../CommandProcessor.rb'
+require_relative '../commandProcessor.rb'
 require 'test/unit'
 require 'rr'
 
