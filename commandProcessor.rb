@@ -26,9 +26,7 @@ module Usercode
 	def isolatedEval(arguments)
 		return eval arguments.join(" ")
 	rescue Exception => e
-		msg = e.message
-		msg.gsub(/ for #<CommandProcessor:[^>]*>/, '')   # clean up clutter
-		raise "Error in your code: " + msg
+		raise "Error in your code: " + e.message.gsub(/ for #<CommandProcessor:[^>]*>/, '')   # clean up clutter
 	end
 end
 
