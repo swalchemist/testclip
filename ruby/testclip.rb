@@ -12,15 +12,15 @@
 # This script is designed for MacOS (small changes to pbcopy can make it portable elsewhere)
 
 require_relative "commandProcessor" 
+require "readline"
 
 #
 # Main loop
 #
 puts 'Ready to generate. Type "help" for help.'
 processor = CommandProcessor.new
-while true
-	puts
-	inputArray = STDIN.gets.chomp.split
+while input = Readline.readline("\n> ", true)
+	inputArray = input.chomp.split
 	begin 
 		break if processor.processCommand(*inputArray) == 1
 	rescue => e
