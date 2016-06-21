@@ -2,7 +2,7 @@
 
 require_relative '../equivalanceClassifier.rb'
 require 'test/unit'
-require 'rr'
+require 'test/unit/rr'
 
 class TestEquivalanceClassifier < Test::Unit::TestCase
 

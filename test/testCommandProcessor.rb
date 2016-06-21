@@ -2,7 +2,7 @@
 
 require_relative '../commandProcessor.rb'
 require 'test/unit'
-require 'rr'
+require 'test/unit/rr'
 
 class TestCommandProcessor < Test::Unit::TestCase
 
